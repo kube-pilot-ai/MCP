@@ -1,0 +1,1 @@
+"""Independent Kubernetes MCP server."""
