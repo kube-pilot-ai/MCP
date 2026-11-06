@@ -40,3 +40,36 @@ docker run --rm --name kube-pilot-mcp -p 127.0.0.1:8002:8002 --env-file .env.mcp
 
 Choose Python or Docker on port 8002. Container certificate paths and credential
 helpers must work inside Linux. No files are imported from the original repository.
+
+
+## Expanded troubleshooting evidence
+
+Additional read-only tools:
+
+- `get_pod_details(pod_name, namespace="default")`: current and previous
+  container states, termination reason/exit code/signal/timestamps, images,
+  memory/CPU requests and limits, conditions, owners, QoS, service account,
+  image pull Secret names, and regular/init/ephemeral container details.
+- `get_deployment_details(deployment_name, namespace="default")`: desired and
+  observed generation, rollout conditions, replica counts, template images,
+  and configured regular/init container resources.
+- `get_node_details(node_name)`: conditions including MemoryPressure, resource
+  capacity/allocatable, taints, and system information. Capacity/allocatable
+  are not live usage measurements.
+
+`list_pods` and `list_deployments` now include these richer summaries.
+`get_pod_logs_and_events` also returns `pod_details`, independently of whether
+logs are empty or unavailable. Select `previous=True` for the prior instance
+and a container name for regular or init-container logs. `log_details` identifies
+empty log responses. An events API error is returned as `events_error` while
+preserving pod details and logs. Missing status fields remain unknown (`null`).
+
+No environment variable values, Secret contents, kubeconfig credentials, or
+container commands are included in these detail payloads. Application logs and
+termination messages remain whatever the application/runtime produced.
+
+Restart the MCP server after changing code, then restart the chat application
+so tool discovery includes the three new tools. The server now exposes nine
+tools. Reads require the corresponding Kubernetes RBAC permissions for pods,
+pod logs, events, deployments, and nodes; partial permission failures are errors,
+not evidence of a healthy resource. No cluster write operations were added.

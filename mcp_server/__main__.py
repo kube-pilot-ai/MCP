@@ -27,6 +27,7 @@ def create_app():
     for name in (
         "list_nodes", "list_namespaces", "list_pods", "list_deployments",
         "list_services", "get_pod_logs_and_events",
+        "get_pod_details", "get_deployment_details", "get_node_details",
     ):
         mcp.add_tool(getattr(kubernetes_tools, name))
     asgi_app = mcp.streamable_http_app()
