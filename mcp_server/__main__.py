@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
-from . import kubernetes_tools
+from . import kubernetes_tools, remediation
 
 
 def create_app():
@@ -30,6 +30,8 @@ def create_app():
         "get_pod_details", "get_deployment_details", "get_node_details",
     ):
         mcp.add_tool(getattr(kubernetes_tools, name))
+    mcp.add_tool(remediation.preview_deployment_remediation)
+    mcp.add_tool(remediation.apply_deployment_remediation)
     asgi_app = mcp.streamable_http_app()
     if not token:
         return asgi_app

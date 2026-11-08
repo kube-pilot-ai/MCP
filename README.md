@@ -69,7 +69,23 @@ container commands are included in these detail payloads. Application logs and
 termination messages remain whatever the application/runtime produced.
 
 Restart the MCP server after changing code, then restart the chat application
-so tool discovery includes the three new tools. The server now exposes nine
-tools. Reads require the corresponding Kubernetes RBAC permissions for pods,
+so tool discovery includes the current tool set. Reads require the corresponding Kubernetes RBAC permissions for pods,
 pod logs, events, deployments, and nodes; partial permission failures are errors,
-not evidence of a healthy resource. No cluster write operations were added.
+not evidence of a healthy resource.
+
+## Approved Deployment remediation
+
+The preview tool reads a specific Deployment container and reports the before
+and after memory or image settings. The apply tool requires an HMAC signature
+from the chat approval service. Configure a shared REMEDIATION_SIGNING_KEY in
+MCP .env.mcp and the chat app .env. Use a different value from MCP_AUTH_TOKEN.
+
+Patching requires get and patch on apps/deployments in the target namespace. The write is conditional on the reviewed cluster, object UID
+and generation, with a resourceVersion check on the patch. Keep the signing key
+private and use HTTPS or a private encrypted network for a remote MCP server.
+
+The same preview and signed apply tools support single-container Deployment
+creation in an existing namespace. Creation requires get on namespaces and
+get/create on apps/deployments in the target namespace. The preview returns the
+full manifest and expires after 30 minutes. Kubernetes create semantics protect
+existing workloads with the same name.
